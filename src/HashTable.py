@@ -1,7 +1,7 @@
 from numba.experimental import jitclass
 import numpy as np
 
-@jitclass
+#@jitclass
 class HashTable():
     def __init__(self, length):
         """
@@ -13,34 +13,36 @@ class HashTable():
                     to dataframe
         """
                 
-        self.codes  = np.array((length, 4), dtype=np.float32)
-        self.origin = np.array((length, 2), dtype=np.float32)
-        self.alpha  = np.array((length), dtype=np.float32)
-        self.scale  = np.array((length), dtype=np.float32)
-        self.idc    = np.array((length, 4), dtype=int)
+        self.codes  = np.zeros((length, 4), dtype=np.float32)
+        self.origin = np.zeros((length, 2), dtype=np.float32)
+        self.alpha  = np.zeros(length, dtype=np.float32)
+        self.scale  = np.zeros(length, dtype=np.float32)
+        self.idc    = np.zeros((length, 4), dtype=int)
         
-        self.ptr = -1   # incremented at first run
+        self.ptr = 0   # incremented at first run
         
         
     def add_row(self, code, origin, alpha, scale, idc):
-        self.ptr += 1
-        if self.ptr > self.codes.shape[0]:
-            raise RuntimeError
-        
+       
         self.codes[self.ptr]  = code
         self.origin[self.ptr] = origin
         self.alpha[self.ptr]  = alpha
         self.scale[self.ptr]  = scale
         self.idc[self.ptr]    = idc
         
+        self.ptr += 1
+        if self.ptr > self.codes.shape[0]:
+            raise RuntimeError
+        
+        
         
     def append(self, htable):
         """append another htable while deleting unused space"""
-        self.codes  = self.codes[:self.ptr+1]  + htable.codes[:htable.ptr+1]
-        self.origin = self.origin[:self.ptr+1] + htable.origin[:htable.ptr+1]
-        self.alpha  = self.alpha[:self.ptr+1]  + htable.alpha[:htable.ptr+1]
-        self.scale  = self.scale[:self.ptr+1]  + htable.scale[:htable.ptr+1]
-        self.idc    = self.idc[:self.ptr+1]    + htable.idc[:htable.ptr+1]
+        self.codes  = np.vstack((self.codes[:self.ptr],  htable.codes[:htable.ptr]))
+        self.origin = np.vstack((self.origin[:self.ptr], htable.origin[:htable.ptr]))
+        self.alpha  = np.concatenate((self.alpha[:self.ptr],  htable.alpha[:htable.ptr]))
+        self.scale  = np.concatenate((self.scale[:self.ptr],  htable.scale[:htable.ptr]))
+        self.idc    = np.vstack((self.idc[:self.ptr],    htable.idc[:htable.ptr]))
         
         self.ptr = self.ptr + htable.ptr   # incremented at first run
         

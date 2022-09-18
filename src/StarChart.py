@@ -1,7 +1,7 @@
 from numba.experimental import jitclass
 import numpy as np
 
-@jitclass
+#@jitclass
 class StarChart():
     def __init__(self):
         # downloaded from https://github.com/astronexus/HYG-Database
@@ -12,7 +12,7 @@ class StarChart():
         self.dec = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
                                  skip_header=True, usecols=8, dtype=float)
         self.mag = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
-                                 skip_header=True, usecols=12, dtype=float)
+                                 skip_header=True, usecols=13, dtype=float)
         self.name = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
                                   skip_header=True, usecols=6, dtype=str)
         

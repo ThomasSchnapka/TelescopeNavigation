@@ -1,8 +1,8 @@
 import numpy as np
 from copy import deepcopy
 from src import hashing as hsh
-from src import GridStars
-from src import HashTable
+from src.GridStars import GridStars
+from src.HashTable import HashTable
 
 
 def _stars_in_subgrid(sc, grid):
@@ -22,7 +22,7 @@ def _stars_in_subgrid(sc, grid):
 
     Returns
     -------
-    mat : (n, 4) matrix where n is the number of choosen stars
+    GridStars object with brightest stars in grid cell
 
     """
     grid_stars = GridStars(grid)
@@ -81,8 +81,8 @@ def permute_and_hash(sc, grid_stars, i_ra, i_dec):
     idc_d = grid_stars.get_cell_stars(i_ra+1, i_dec+1)
     
     if (len(idc_a)==0 | len(idc_b)==0 | len(idc_c)==0 | len(idc_d)==0):
-        return np.empty((0, 12))
-    subhtable = HashTable((len(idc_a)*len(idc_b)*len(idc_c)*len(idc_d)), 12)
+        return HashTable(0)
+    subhtable = HashTable(len(idc_a)*len(idc_b)*len(idc_c)*len(idc_d))
     for i_a in idc_a:
         for i_b in idc_b:
             for i_c in idc_c:
@@ -94,7 +94,7 @@ def permute_and_hash(sc, grid_stars, i_ra, i_dec):
                                     [sc.ra[i_d], sc.dec[i_d]]])
                     code, origin, alpha, scale = hsh.generate_quad_code(pos, return_geometry=True)
                     idc = np.array([i_a, i_b, i_c, i_d])
-                    subhtable.add(code, origin, alpha, scale, idc)
+                    subhtable.add_row(code, origin, alpha, scale, idc)
     return subhtable
                     
             

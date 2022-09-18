@@ -1,12 +1,12 @@
 from numba.experimental import jitclass
 import numpy as np
 
-@jitclass
+#@jitclass
 class GridStars():
     def __init__(self, grid):
         """
-        Table containing stars in grid cells. Each subgrid has its own 
-        GridStars objects
+        Table containing brightest stars in grid cells. Each subgrid has its
+        own GridStars objects. Number of stars per cell is grid.n_brgh
         
         star_id corresponds to entry in star chart
         """
@@ -15,8 +15,6 @@ class GridStars():
         
         self.grid      = grid
         self.star_id   = np.ones(shape, dtype=int)*-1
-        
-        self.ptr = -1   # incremented at first run
         
         
     def add_star(self, i_ra, i_dec, i_brgh, star_id):
@@ -28,7 +26,8 @@ class GridStars():
         stars = self.star_id[i_ra, i_dec, :]
         return stars[stars>0]
     
+    
     def __repr__(self):
-        return f"GridTable with shape {self.star_id.shape} entries"
+        return f"GridStars table with shape {self.star_id.shape} entries"
     
     

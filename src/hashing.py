@@ -179,6 +179,8 @@ def generate_hash_codes(star_pos, star_brightness):
         for i_b in range(2, i_a):
             for i_c in range(1, i_b):
                 for i_d in range(0, i_c):
-                    code = generate_quad_code(_star_pos[[i_a, i_b, i_c, i_d]])  
-    return code
+                    code, A, alpha, scale = generate_quad_code(
+                                             _star_pos[[i_a, i_b, i_c, i_d]],
+                                             return_geometry=True)  
+    return code, A, alpha, scale
 

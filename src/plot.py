@@ -2,14 +2,14 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
-def plot_star_selection(df, ra_center, dec_center, fov, deg_ticks=False, 
+def plot_star_selection(sc, ra_center, dec_center, fov, deg_ticks=False, 
                         tan_proj=False):
     """
     draw stars in fov around center
 
     Parameters
     ----------
-    df:         dataFrame with stars
+    sc:         StarChart object
     ra_center:  center right ascension (rad)
     dec_center: center declination (rad)
     fov:        field of view (rad)
@@ -22,11 +22,11 @@ def plot_star_selection(df, ra_center, dec_center, fov, deg_ticks=False,
 
     """
     # extract data from dataFrame
-    choice = (  (df["ra"]  < ra_center + fov/2) &  (df["ra"] > ra_center - fov/2)
-              & (df["dec"] < dec_center + fov/2) &  (df["dec"] > dec_center - fov/2))
-    ra = df["ra"].loc[choice].to_numpy()
-    dec = df["dec"].loc[choice].to_numpy()
-    mag = df["mag"].loc[choice].to_numpy()
+    choice = (  (sc.ra  < ra_center + fov/2)  & (sc.ra > ra_center - fov/2)
+              & (sc.dec < dec_center + fov/2) & (sc.dec > dec_center - fov/2))
+    ra =  sc.ra[choice]
+    dec = sc.dec[choice]
+    mag = sc.mag[choice]
 
     size = 100*(1.5**-mag)
     
@@ -52,7 +52,7 @@ def plot_star_selection(df, ra_center, dec_center, fov, deg_ticks=False,
         ax.set_yticks(yticks, [f"{ang:.3f}°" for ang in yticks*180/np.pi])
     
     # add names
-    names = df["proper"].loc[choice].to_numpy()
+    names = sc.name[choice]
     for i, name in enumerate(names):
         if name is not np.nan:
             #plt.text(X[i], Y[i], name)
@@ -61,13 +61,27 @@ def plot_star_selection(df, ra_center, dec_center, fov, deg_ticks=False,
     return fig, ax
 
 
-def draw_grid_stars(ax, grid_stars, df):
-    """draw grid and encircle brightest stars"""
-    for i in range(grid_stars.shape[0]):
-        if grid_stars[i, -1]>0:
-            loc = (df.iloc[grid_stars[i, -1]]["ra"], 
-                   df.iloc[grid_stars[i, -1]]["dec"])
-            ax.add_patch(plt.Circle(loc, 0.005/(grid_stars[i, 0]+1), color="pink", fill=False, alpha=0.5))
+def highlight_grid_stars(ax, grid_stars, sc, r_circ=0.001):
+    """
+    encircle brightest stars per grid cell
+
+    Parameters
+    ----------
+    ax : pyplot axis to draw on
+    grid_stars : list of GridStars objects
+    sc : StarChart instance
+    r_circ : (optional) circle radius
+    """
+    for gs in grid_stars:
+        for i_br in range(gs.grid.n_brgh):
+            idx_br = gs.star_id[:,:,i_br]
+            for i_star in idx_br.flatten():
+                if i_star<0: continue
+                ra  = sc.ra[i_star]
+                dec = sc.dec[i_star]
+                ax.add_patch(plt.Circle((ra,dec), r_circ/(i_br+1),
+                                        color="pink", fill=False, alpha=0.5)
+                             )
             
             
 def draw_grid_cells(ax, grid):
