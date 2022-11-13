@@ -1,3 +1,4 @@
+"""table structure containing star locations and hashcodes"""
 from numba.experimental import jitclass
 import numpy as np
 

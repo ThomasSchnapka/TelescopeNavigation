@@ -1,9 +1,10 @@
+"""class representing grid to choose stars in. Mostly used for storing parameters"""
 from copy import deepcopy
 import numpy as np
 
 
 class Grid():
-    '''class representing grid to choose stars'''
+    '''class representing grid to choose stars in'''
     def __init__(self, D0_ra=0.99, D0_dec=0.42, n_ra=10, n_dec=10, d_ra=0.01,
                  d_dec=0.01, n_brgh=2, f_decr=3, n_iter=2):
         self.D0_ra  = D0_ra   # grid center

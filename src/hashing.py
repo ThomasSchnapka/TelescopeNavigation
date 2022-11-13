@@ -1,3 +1,5 @@
+"""functions for generating hashcodes for star quadruples"""
+
 import numpy as np
 import numba as nb
 import matplotlib.pyplot as plt
@@ -46,7 +48,7 @@ def generate_quad_code(star_pos, return_geometry=False):
     generate geometric hash code given coordinates for four stars as described
     in reference.
     
-    The hash code are the normalized coordinates of stars C and D in a
+    The hash codes are the normalized coordinates of stars C and D in a
     coordinate system span by A and B. A and B must be the most distant stars.
     Hash coordinates are not neccessarily in [0,1]!
 
