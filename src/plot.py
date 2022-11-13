@@ -96,7 +96,7 @@ def draw_grid_cells(ax, grid):
     """
     
     for i in range(grid.n_iter):
-        kwargs = {"linewidth": 1, "color":"r", "alpha":0.6/(i+1)}
+        kwargs = {"linewidth": 1, "color":"r", "alpha":0.6/(i+1), "label":"cells"}
         
         # calculate grid
         frac = grid.f_decr**i

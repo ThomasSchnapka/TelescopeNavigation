@@ -1,7 +1,7 @@
 import numpy as np
 from copy import deepcopy
 from src import hashing as hsh
-from src.GridStars import GridStars
+from src.StarsInGridCells import StarsInGridCells
 from src.HashTable import HashTable
 
 
@@ -22,10 +22,10 @@ def _stars_in_subgrid(sc, grid):
 
     Returns
     -------
-    GridStars object with brightest stars in grid cell
+    StarsInGridCells object with brightest stars in grid cell
 
     """
-    grid_stars = GridStars(grid)
+    grid_stars = StarsInGridCells(grid)
     
     # grid coordinates
     grid_ra  = grid.origin_ra  + np.arange(0, grid.n_ra +1)*grid.d_ra
@@ -43,15 +43,14 @@ def _stars_in_subgrid(sc, grid):
     return grid_stars
 
 
-def stars_in_total_grid(sc, grid):
+def brightest_star_per_cell(star_chart, grid):
     """
     return matrix containing stars in cells, including all subgrids. If no star 
     is found in a cell, the row is filled with -1
 
-
     Parameters
     ----------
-    sc : StarChart() object
+    star_chart : StarChart() object
     grid : Grid() object
 
     Returns
@@ -67,7 +66,7 @@ def stars_in_total_grid(sc, grid):
         subgrid = grid.copy(frac)
         
         # find and appends stars in subgrid
-        subgrid_stars = _stars_in_subgrid(sc, subgrid)
+        subgrid_stars = _stars_in_subgrid(star_chart, subgrid)
         grid_stars_vec.append(subgrid_stars)
         
     return grid_stars_vec
@@ -98,7 +97,7 @@ def permute_and_hash(sc, grid_stars, i_ra, i_dec):
     return subhtable
                     
             
-def reference_grid_hashtable(sc, grid_stars_vec, grid):
+def create_reference_hashtable(star_chart, grid, return_grid_stars=False):
     """
     create reference hashtable based on grid. grid_stars are calculated outside
     this function to use them for plots.
@@ -114,16 +113,16 @@ def reference_grid_hashtable(sc, grid_stars_vec, grid):
 
     Parameters
     ----------
-    sc : StarChart() object
-    grid_stars : matrix containing stars in cells, 
-                 as returned by stars_in_total_grid()
+    star_chart : StarChart() object
     grid : Grid() instance
+    return_grid_stars : whether to return list of brightest stars per cell (for plotting)
 
     Returns
     -------
     table : reference table with hashcodes and stars
 
     """
+    stars_in_grid_vec = brightest_star_per_cell(star_chart, grid)
     
     # allocate memory with predicted length
     htable = HashTable(0)
@@ -133,9 +132,13 @@ def reference_grid_hashtable(sc, grid_stars_vec, grid):
         #i_iter | grid_col | grid_row | mag_order | star_id
         print(f"[reference hashtable] Hash generation iteration {i_iter}")
         frac = grid.f_decr**i_iter
-        subgrid_stars = grid_stars_vec[i_iter]
+        subgrid_stars = stars_in_grid_vec[i_iter]
         for i_ra in range(grid.n_ra*frac-1):
             for i_dec in range(grid.n_dec*frac-1):
-                subhtable = permute_and_hash(sc, subgrid_stars, i_ra, i_dec)
+                subhtable = permute_and_hash(star_chart, subgrid_stars, i_ra, i_dec)
                 htable.append(subhtable)
-    return htable
+
+    if return_grid_stars:
+        return htable, stars_in_grid_vec
+    else:
+        return htable

@@ -3,17 +3,17 @@ import numpy as np
 
 #@jitclass
 class StarChart():
-    def __init__(self):
+    def __init__(self, path="data/hygdata_v3.csv"):
         # downloaded from https://github.com/astronexus/HYG-Database
     
         # read entries
-        self.ra = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
+        self.ra = np.genfromtxt(path, delimiter=',', 
                                 skip_header=True, usecols=7, dtype=float)
-        self.dec = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
+        self.dec = np.genfromtxt(path, delimiter=',', 
                                  skip_header=True, usecols=8, dtype=float)
-        self.mag = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
+        self.mag = np.genfromtxt(path, delimiter=',', 
                                  skip_header=True, usecols=13, dtype=float)
-        self.name = np.genfromtxt("data/hygdata_v3.csv", delimiter=',', 
+        self.name = np.genfromtxt(path, delimiter=',', 
                                   skip_header=True, usecols=6, dtype=str)
         
         # sort entries by brightness 

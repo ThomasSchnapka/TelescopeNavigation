@@ -31,10 +31,8 @@ imgcode, imgA, imgalpha, imgscale = hsh.generate_hash_codes(local_minima, minima
 ### CATALOGUE #################################################################
 
 star_chart = StarChart()
-    
 grid = Grid()
-grid_stars = gp.stars_in_total_grid(star_chart, grid)
-hashtable = gp.reference_grid_hashtable(star_chart, grid_stars, grid)
+hashtable, grid_stars = gp.create_reference_hashtable(star_chart, grid, return_grid_stars=True)
 
 #### COMPARISON OF HASHCODES ###############################################
 
@@ -63,6 +61,10 @@ fig.suptitle("Pleiades", size=40)
 # plot grid and grid stars
 plot.draw_grid_cells(ax, grid)
 plot.highlight_grid_stars(ax, grid_stars, star_chart)
+legend_elements = [plt.Line2D([0], [0], linewidth=1, color="r", label="grid"),
+                   plt.Circle((0,0), 0, color="pink", fill=False, alpha=0.5, label='brightest star in cell')]
+plt.legend(handles=legend_elements, loc='upper left')
+#plt.show()
 
 
 # image
