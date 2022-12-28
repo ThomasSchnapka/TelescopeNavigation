@@ -1,14 +1,14 @@
 ## Roadmap/ To-Do
 
 1. build hashed star catalogue ("StarChart") based on HYG database
-    0. add unit tests
-    1. develop hashing procedure catalogue --> star chart
+    1. add unit tests
+    2. develop hashing procedure catalogue --> star chart
 
 2. find image in StarChart
-    0. add unit tests
-    1. locate stars in noisy images
-    2. hash stars in images
-    3. construct hypothesis test for all occurring hashes
+    1. add unit tests
+    2. locate stars in noisy images
+    3. hash stars in images
+    4. construct hypothesis test for all occurring hashes
 
 3. test image location systematically
     1. find bottlenecks
@@ -17,9 +17,9 @@
     4. check the influence and necessity of image stacking for localization
 
 4. build loop to orient telescope based on shown images
-    0. (build hardware)
-    1. develop architecture incl. image capturing requirements, Earth movement
-    2. test with hardware
+    1. (build hardware)
+    2. develop architecture incl. image capturing requirements, Earth movement
+    3. test with hardware
 
 
 
@@ -46,10 +46,10 @@ Based on Land et. al "Astrometry. net: Blind astrometric calibration of arbitrar
 
 
 ### Star detection in images
-# TODO
+TODO
 
 ### Search in hashtable and hypothesis test
-# TODO
+TODO
 
 
 
