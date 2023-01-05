@@ -1,6 +1,6 @@
-import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from copy import deepcopy
 
 def plot_star_selection(sc, ra_center, dec_center, fov, deg_ticks=False, 
                         tan_proj=False):
@@ -41,7 +41,7 @@ def plot_star_selection(sc, ra_center, dec_center, fov, deg_ticks=False,
     ax.scatter(ra, dec, s=size, c="w")
     ax.set_ylabel("dec [rad]")
     ax.set_xlabel("ra [rad]")
-    ax.invert_xaxis()
+    ax.invert_xaxis() # ra coordinates point from west to east
     ax.set_aspect("equal")
 
     if deg_ticks==True:
@@ -61,27 +61,25 @@ def plot_star_selection(sc, ra_center, dec_center, fov, deg_ticks=False,
     return fig, ax
 
 
-def highlight_grid_stars(ax, grid_stars, sc, r_circ=0.001):
+def highlight_grid_stars(ax, hashtable, starchart, r_circ=0.001):
     """
     encircle brightest stars per grid cell
 
     Parameters
     ----------
     ax : pyplot axis to draw on
-    grid_stars : list of GridStars objects
-    sc : StarChart instance
+    hashtable : HashTable instance (containing brightest stars)
+    starchart : StarChart instance
     r_circ : (optional) circle radius
     """
-    for gs in grid_stars:
-        for i_br in range(gs.grid.n_brgh):
-            idx_br = gs.star_id[:,:,i_br]
-            for i_star in idx_br.flatten():
-                if i_star<0: continue
-                ra  = sc.ra[i_star]
-                dec = sc.dec[i_star]
-                ax.add_patch(plt.Circle((ra,dec), r_circ/(i_br+1),
-                                        color="pink", fill=False, alpha=0.5)
-                             )
+    idx_brightest = np.unique(hashtable.idc)
+
+    for i_star in idx_brightest:
+        ra  = starchart.ra[i_star]
+        dec = starchart.dec[i_star]
+        ax.add_patch(plt.Circle((ra,dec), r_circ,
+                                color="pink", fill=False, alpha=0.5)
+                        )
             
             
 def draw_grid_cells(ax, grid):
@@ -94,16 +92,31 @@ def draw_grid_cells(ax, grid):
     grid : Grid object
     
     """
-    
-    for i in range(grid.n_iter):
+
+    _grid = deepcopy(grid)
+
+    for i in range(_grid.depth):
         kwargs = {"linewidth": 1, "color":"r", "alpha":0.6/(i+1), "label":"cells"}
-        
+
         # calculate grid
-        frac = grid.f_decr**i
-        grid_ra = grid.origin_ra   + np.arange(0, frac*grid.n_ra )*grid.d_ra/frac
-        grid_dec = grid.origin_dec + np.arange(0, frac*grid.n_dec)*grid.d_dec/frac
+        grid_ra = _grid.ra_start   + np.arange(0, _grid.n_ra)*_grid.ra_width
+        grid_dec = _grid.dec_start + np.arange(0, _grid.n_dec)*_grid.dec_width
         
         # plot grid
         for ra in grid_ra: ax.axvline(ra, np.pi, -np.pi, **kwargs)
         for dec in grid_dec: ax.axhline(dec, np.pi, -np.pi, **kwargs)
+
+        _grid = _grid.descend()
+    
+    # for i in range(grid.n_iter):
+    #     kwargs = {"linewidth": 1, "color":"r", "alpha":0.6/(i+1), "label":"cells"}
+        
+    #     # calculate grid
+    #     frac = grid.f_decr**i
+    #     grid_ra = grid.origin_ra   + np.arange(0, frac*grid.n_ra )*grid.d_ra/frac
+    #     grid_dec = grid.origin_dec + np.arange(0, frac*grid.n_dec)*grid.d_dec/frac
+        
+    #     # plot grid
+    #     for ra in grid_ra: ax.axvline(ra, np.pi, -np.pi, **kwargs)
+    #     for dec in grid_dec: ax.axhline(dec, np.pi, -np.pi, **kwargs)
 

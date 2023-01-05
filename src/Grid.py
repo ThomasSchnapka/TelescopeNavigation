@@ -1,31 +1,54 @@
-"""class representing grid to choose stars in. Mostly used for storing parameters"""
+"""class representing grid to choose stars in. Mainly used for storing parameters"""
 from copy import deepcopy
 import numpy as np
 
-
+is_rad = lambda x: (x>=0) & (x<=2*np.pi)
 class Grid():
-    '''class representing grid to choose stars in'''
-    def __init__(self, D0_ra=0.99, D0_dec=0.42, n_ra=10, n_dec=10, d_ra=0.01,
-                 d_dec=0.01, n_brgh=2, f_decr=3, n_iter=2):
-        self.D0_ra  = D0_ra   # grid center
-        self.D0_dec = D0_dec  # grid center
-        self.n_ra   = n_ra    # number of cells
-        self.n_dec  = n_dec   # number of cells
+    """
+    Class representing grid to choose stars in.
+
+    For each grid cell, the `n_brgh` brightest stars are used for the hashing procedure.
+    The grid gets halved "depth" times, resulting in 4 times more cells per iteration.
     
-        self.d_ra   = d_ra    # initial cell width (right ascension)
-        self.d_dec  = d_dec   # initial cell width (declination)
-        self.n_brgh = n_brgh  # max amount of stars to permutate from each cell
-        self.f_decr = f_decr  # fraction by which subgrid is decreased
-        self.n_iter = n_iter  # number of subgrids
-        
-        self.origin_ra = D0_ra - (n_ra*d_ra)/2
-        self.origin_dec = D0_dec - (n_dec*d_dec)/2
-        
-    def copy(self, frac):
-        """return subgrid with fraction"""
-        subgrid = deepcopy(self)
-        subgrid.d_ra  = subgrid.d_ra/frac
-        subgrid.d_dec = subgrid.d_dec/frac
-        subgrid.n_ra  = subgrid.n_ra*frac
-        subgrid.n_dec = subgrid.n_dec*frac
-        return subgrid
+    Because RA points from west to east, ra_start must be larger than ra_end.
+
+    Attributes:
+    ----------
+        ra_start:  float, right ascension of 'lower left' grid corner, in RAD
+        dec_start: float, declination of 'lower left' grid corner, in RAD
+        ra_end:    float, right ascension of 'upper right' grid corner, in RAD
+        dec_end:   float, declination of 'upper right' grid corner, in RAD
+        n_ra:      int, number of cells in eastward direction
+        n_dec:     int, number of cells in northward direction
+        n_brgh:    int, number of brightest stars to choose per cell
+        depth :    int, how often the grid of depth 0 is halved
+    """
+    def __init__(self, ra_start, dec_start, ra_end, dec_end, n_ra, n_dec, n_brgh, depth):
+        assert is_rad(ra_start), ra_start
+        assert is_rad(dec_start), dec_start
+        assert is_rad(ra_end), ra_end
+        assert is_rad(dec_end), dec_end
+        assert ra_start > ra_end, (ra_start, ra_end) # RA increases eastwards
+        assert dec_start < dec_end, (dec_start, dec_end)
+
+        self.ra_start  = ra_start
+        self.dec_start = dec_start
+        self.ra_end    = ra_end
+        self.dec_end   = dec_end
+        self.n_ra      = n_ra
+        self.n_dec     = n_dec
+        self.n_brgh    = n_brgh
+        self.depth     = depth
+
+        self.ra_width  = (ra_end  -  ra_start)/n_ra
+        self.dec_width = (dec_end - dec_start)/n_dec
+
+    def descend(self):
+        """return grid with halved grid width"""
+        deep_grid = deepcopy(self)
+        deep_grid.n_ra  = self.n_ra*2
+        deep_grid.n_dec = self.n_dec*2
+
+        deep_grid.ra_width  = (self.ra_end  - self.ra_start)/deep_grid.n_ra
+        deep_grid.dec_width = (self.dec_end - self.dec_start)/deep_grid.n_dec
+        return deep_grid

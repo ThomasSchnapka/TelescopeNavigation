@@ -6,7 +6,7 @@ import numpy as np
 class HashTable():
     def __init__(self, length):
         """
-        ( code | code | code | code | origin | origin | alpha | scale | iA | iB | iC | iD )
+        ( code | code | code | code || origin | origin || alpha | scale || iA | iB | iC | iD )
          - 'code' 4 hashcode values
          - 'origin' origin of hash coordinate system in celectial coordiantes
          - 'scale'  scale of hash cordinate system

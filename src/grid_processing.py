@@ -1,8 +1,11 @@
 import numpy as np
 from copy import deepcopy
+
 from src import hashing as hsh
-from src.StarsInGridCells import StarsInGridCells
+from src.BrightestInGrid import BrightestInGrid
 from src.HashTable import HashTable
+from src.Grid import Grid
+from src.StarChart import StarChart
 
 
 def _stars_in_subgrid(sc, grid):
@@ -11,9 +14,6 @@ def _stars_in_subgrid(sc, grid):
     filled with -1
 
     Matrix cols: grid_col | grid_row | mag_order | star_id
-    
-    This function is designed to be called for each subgrid individually. Use
-    iterative_stars_in_grid(..) for whole grid
 
     Parameters
     ----------
@@ -25,17 +25,17 @@ def _stars_in_subgrid(sc, grid):
     StarsInGridCells object with brightest stars in grid cell
 
     """
-    grid_stars = StarsInGridCells(grid)
+    grid_stars = BrightestInGrid(grid)
     
     # grid coordinates
-    grid_ra  = grid.origin_ra  + np.arange(0, grid.n_ra +1)*grid.d_ra
-    grid_dec = grid.origin_dec + np.arange(0, grid.n_dec+1)*grid.d_dec
+    grid_ra  = grid.ra_start  + np.arange(0, grid.n_ra +1)*grid.ra_width  # decreasing
+    grid_dec = grid.dec_start + np.arange(0, grid.n_dec+1)*grid.dec_width # increasing
     
     # find brightest stars in cell
     for i_ra in range(grid.n_ra):
         for i_dec in range(grid.n_dec):
             in_grid = np.argwhere(  
-                        (sc.ra  < grid_ra[i_ra+1])   & (sc.ra >= grid_ra[i_ra])
+                        (sc.ra  > grid_ra[i_ra+1])   & (sc.ra <= grid_ra[i_ra])
                       & (sc.dec < grid_dec[i_dec+1]) & (sc.dec >= grid_dec[i_dec])
                       ).flatten()
             for i_br in range(np.min([grid.n_brgh, len(in_grid)])):
@@ -97,48 +97,43 @@ def permute_and_hash(sc, grid_stars, i_ra, i_dec):
     return subhtable
                     
             
-def create_reference_hashtable(star_chart, grid, return_grid_stars=False):
+def build_hashtable(star_chart, grid_spec, return_grid=False):
     """
-    create reference hashtable based on grid. grid_stars are calculated outside
-    this function to use them for plots.
-    
-    The reference table structure is
-    ( code | code | code | code | origin | origin | alpha | scale | iA | iB | iC | iD )
-     - 'code' 4 hashcode values
-     - 'origin' origin of hash coordinate system in celectial coordiantes
-     - 'scale'  scale of hash cordinate system
-     - 'i*'     indices of stars creating hash coordinate system corresponding
-                to dataframe
+    create hashtable based on given grids, where the subgrids are build by halving the original
+    grid with `width` times.
     
 
     Parameters
     ----------
     star_chart : StarChart() object
-    grid : Grid() instance
-    return_grid_stars : whether to return list of brightest stars per cell (for plotting)
+    grid_spec : dict, keyword dict for first grid object with depth 0
+    return_grid : bool, whether to return grid object (for plotting)
 
     Returns
     -------
-    table : reference table with hashcodes and stars
+    table : HashTable, reference table with hashcodes and stars
+    grid : (optional) Grid instance of depth 0
 
     """
-    stars_in_grid_vec = brightest_star_per_cell(star_chart, grid)
-    
-    # allocate memory with predicted length
+
+    grid = Grid(**grid_spec)
     htable = HashTable(0)
-    
-    i_cnt = 0
-    for i_iter in range(grid.n_iter):
-        #i_iter | grid_col | grid_row | mag_order | star_id
-        print(f"[reference hashtable] Hash generation iteration {i_iter}")
-        frac = grid.f_decr**i_iter
-        subgrid_stars = stars_in_grid_vec[i_iter]
-        for i_ra in range(grid.n_ra*frac-1):
-            for i_dec in range(grid.n_dec*frac-1):
-                subhtable = permute_and_hash(star_chart, subgrid_stars, i_ra, i_dec)
+
+    for i_depth in range(grid.depth):
+        print(f"[build_hashtable()] depth {i_depth}")
+        #brightest_in_grid = _stars_in_subgrid(star_chart, grid)
+        for i_ra in range(grid.n_ra-1):
+            for i_dec in range(grid.n_dec-1):
+                brightest_in_grid = _stars_in_subgrid(star_chart, grid)
+                subhtable = permute_and_hash(star_chart, brightest_in_grid, i_ra, i_dec)
                 htable.append(subhtable)
 
-    if return_grid_stars:
-        return htable, stars_in_grid_vec
+        grid = grid.descend()
+
+    if len(htable.codes)==0:
+        raise RuntimeError("No hashcodes for given configuration")
+
+    if return_grid:
+        return htable, Grid(**grid_spec)
     else:
         return htable

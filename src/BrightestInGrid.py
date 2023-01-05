@@ -3,7 +3,7 @@ from numba.experimental import jitclass
 import numpy as np
 
 #@jitclass
-class StarsInGridCells():
+class BrightestInGrid():
     def __init__(self, grid):
         """
         Table containing brightest stars in grid cells. Each subgrid has its

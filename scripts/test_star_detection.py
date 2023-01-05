@@ -14,7 +14,6 @@ from src import star_detection as sd
 from src import grid_processing as gp
 from src import hashing as hsh
 from src.StarChart import StarChart
-from src.Grid import Grid
 
 ### IMAGE #####################################################################
 # img_name = "Pleiades-DJ-900px.jpg"
@@ -30,9 +29,10 @@ imgcode, imgA, imgalpha, imgscale = hsh.generate_hash_codes(local_minima, minima
 
 ### CATALOGUE #################################################################
 
-star_chart = StarChart()
-grid = Grid()
-hashtable, grid_stars = gp.create_reference_hashtable(star_chart, grid, return_grid_stars=True)
+reference_star_chart = StarChart()
+grid_spec = {"ra_start": 1.02, "dec_start":0.40, "ra_end": 0.98, "dec_end": 0.44,
+             "n_ra": 5, "n_dec": 5, "n_brgh": 5, "depth": 2}
+hashtable, grid = gp.build_hashtable(reference_star_chart, grid_spec, return_grid=True)
 
 #### COMPARISON OF HASHCODES ###############################################
 
@@ -47,20 +47,20 @@ nn_alpha, nn_scale = hashtable.alpha[nghb_hash], hashtable.scale[nghb_hash]
 ##### PLOT ################################################################
 
 # catalogue
-i_center = np.nonzero(star_chart.name=="Alcyone")[0][0]
-ra_center = star_chart.ra[i_center] + 0.01
-dec_center = star_chart.dec[i_center] + 0.01
+i_center = np.nonzero(reference_star_chart.name=="Alcyone")[0][0]
+ra_center = reference_star_chart.ra[i_center] + 0.01
+dec_center = reference_star_chart.dec[i_center] + 0.01
 fov = 4*np.pi/180
 #ra_center, dec_center = df[["ra", "dec"]].loc[df["proper"]=="Alioth"].values[0]
 #fov = 2*np.pi/30 #160
 
 # plot stars
-fig, ax = plot.plot_star_selection(star_chart, ra_center, dec_center, fov, tan_proj=False)
+fig, ax = plot.plot_star_selection(reference_star_chart, ra_center, dec_center, fov, tan_proj=False)
 fig.suptitle("Pleiades", size=40)
 
 # plot grid and grid stars
 plot.draw_grid_cells(ax, grid)
-plot.highlight_grid_stars(ax, grid_stars, star_chart)
+plot.highlight_grid_stars(ax, hashtable, reference_star_chart)
 legend_elements = [plt.Line2D([0], [0], linewidth=1, color="r", label="grid"),
                    plt.Circle((0,0), 0, color="pink", fill=False, alpha=0.5, label='brightest star in cell')]
 plt.legend(handles=legend_elements, loc='upper left')
