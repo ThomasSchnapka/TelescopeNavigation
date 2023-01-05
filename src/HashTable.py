@@ -1,10 +1,11 @@
 """table structure containing star locations and hashcodes"""
 from numba.experimental import jitclass
 import numpy as np
+import pickle
 
 #@jitclass
 class HashTable():
-    def __init__(self, length):
+    def __init__(self, length=0):
         """
         ( code | code | code | code || origin | origin || alpha | scale || iA | iB | iC | iD )
          - 'code' 4 hashcode values
@@ -35,8 +36,6 @@ class HashTable():
         if self.ptr > self.codes.shape[0]:
             raise RuntimeError
         
-        
-        
     def append(self, htable):
         """append another htable while deleting unused space"""
         self.codes  = np.vstack((self.codes[:self.ptr],  htable.codes[:htable.ptr]))
@@ -51,4 +50,19 @@ class HashTable():
     def __repr__(self):
         return f"HashTable with {self.codes.shape[0]} entries"
     
-    
+    def save(self, filename):
+        with open(filename, 'wb') as file:
+            pickle.dump(self, file, pickle.HIGHEST_PROTOCOL)
+
+    def load(self, filename):
+        with open(filename, 'rb') as file:
+            htable = pickle.load(file)
+
+        self.codes  = htable.codes
+        self.origin = htable.origin
+        self.alpha  = htable.alpha
+        self.scale  = htable.scale
+        self.idc    = htable.idc    
+        
+        return self
+

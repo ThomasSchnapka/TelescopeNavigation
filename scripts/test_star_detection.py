@@ -14,10 +14,12 @@ from src import star_detection as sd
 from src import grid_processing as gp
 from src import hashing as hsh
 from src.StarChart import StarChart
+from src.Grid import Grid
+from src.HashTable import HashTable
 
 ### IMAGE #####################################################################
-# img_name = "Pleiades-DJ-900px.jpg"
-img_name = "bitterli.jpg"
+img_name = "Pleiades-DJ-900px.jpg"
+# img_name = "bitterli.jpg"
 # #img_name = "aachen.jpg"
 img = cv2.imread("data/"+img_name, cv2.IMREAD_GRAYSCALE)
                  
@@ -32,7 +34,9 @@ imgcode, imgA, imgalpha, imgscale = hsh.generate_hash_codes(local_minima, minima
 reference_star_chart = StarChart()
 grid_spec = {"ra_start": 1.02, "dec_start":0.40, "ra_end": 0.98, "dec_end": 0.44,
              "n_ra": 5, "n_dec": 5, "n_brgh": 5, "depth": 2}
-hashtable, grid = gp.build_hashtable(reference_star_chart, grid_spec, return_grid=True)
+hashtable = gp.build_hashtable(reference_star_chart, grid_spec)
+hashtable.save("data/pleiades.hashtable")
+hashtable = HashTable().load("data/pleiades.hashtable")
 
 #### COMPARISON OF HASHCODES ###############################################
 
@@ -59,6 +63,7 @@ fig, ax = plot.plot_star_selection(reference_star_chart, ra_center, dec_center, 
 fig.suptitle("Pleiades", size=40)
 
 # plot grid and grid stars
+grid = Grid(**grid_spec)
 plot.draw_grid_cells(ax, grid)
 plot.highlight_grid_stars(ax, hashtable, reference_star_chart)
 legend_elements = [plt.Line2D([0], [0], linewidth=1, color="r", label="grid"),
