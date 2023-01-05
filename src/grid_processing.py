@@ -97,7 +97,7 @@ def permute_and_hash(sc, grid_stars, i_ra, i_dec):
     return subhtable
                     
             
-def build_hashtable(star_chart, grid_spec, return_grid=False):
+def build_hashtable(star_chart, grid_spec):
     """
     create hashtable based on given grids, where the subgrids are build by halving the original
     grid with `width` times.
@@ -107,12 +107,10 @@ def build_hashtable(star_chart, grid_spec, return_grid=False):
     ----------
     star_chart : StarChart() object
     grid_spec : dict, keyword dict for first grid object with depth 0
-    return_grid : bool, whether to return grid object (for plotting)
 
     Returns
     -------
     table : HashTable, reference table with hashcodes and stars
-    grid : (optional) Grid instance of depth 0
 
     """
 
@@ -133,7 +131,4 @@ def build_hashtable(star_chart, grid_spec, return_grid=False):
     if len(htable.codes)==0:
         raise RuntimeError("No hashcodes for given configuration")
 
-    if return_grid:
-        return htable, Grid(**grid_spec)
-    else:
-        return htable
+    return htable
